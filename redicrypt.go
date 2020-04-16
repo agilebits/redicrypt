@@ -98,6 +98,7 @@ func (rc *RediCrypt) Put(ctx context.Context, name string, data []byte) error {
 // Delete removes the specified redis key.
 func (rc *RediCrypt) Delete(ctx context.Context, name string) error {
 	key := redisKeyForName(name)
+	fmt.Println("redicrypt: deleting cert for key ", key)
 	done := make(chan error)
 
 	go func() {
