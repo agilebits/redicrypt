@@ -10,12 +10,14 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+// RediCrypt is a redis based cache storage
 type RediCrypt struct {
 	Addr string
 	Conn redis.Conn
 }
 
-func RediCryptWithAddr(addr string) (*RediCrypt, error) {
+// NewRediCryptWithAddr is a constructor for a redicrypt instance with a specific address
+func NewRediCryptWithAddr(addr string) (*RediCrypt, error) {
 	c, err := redis.Dial("tcp", addr)
 	if err != nil {
 		return nil, errors.Wrap(err, "RediCryptWithAddr failed to Dial")
