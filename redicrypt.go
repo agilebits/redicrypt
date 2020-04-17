@@ -12,15 +12,16 @@ import (
 
 // RediCrypt is a redis based cache storage
 type RediCrypt struct {
-	Addr string
-	Conn redis.Conn
+	Addr      string
+	Conn      redis.Conn
+	certnames []string
 }
 
 // NewRediCryptWithAddr is a constructor for a redicrypt instance with a specific address
 func NewRediCryptWithAddr(addr string) (*RediCrypt, error) {
 	c, err := redis.Dial("tcp", addr)
 	if err != nil {
-		return nil, errors.Wrap(err, "RediCryptWithAddr failed to Dial")
+		return nil, errors.Wrap(err, "NewRediCryptWithAddr failed to Dial")
 	}
 
 	rc := &RediCrypt{
@@ -71,6 +72,7 @@ func (rc *RediCrypt) Get(ctx context.Context, name string) ([]byte, error) {
 func (rc *RediCrypt) Put(ctx context.Context, name string, data []byte) error {
 	key := redisKeyForName(name)
 	fmt.Println("redicrypt: writing cert for key ", key)
+	rc.certnames = append(rc.certnames, name)
 
 	encodedData := base64.StdEncoding.EncodeToString(data)
 	done := make(chan error)
@@ -118,6 +120,23 @@ func (rc *RediCrypt) Delete(ctx context.Context, name string) error {
 	}
 
 	return nil
+}
+
+// GetAll returns all stored certificates
+func (rc *RediCrypt) GetAll(ctx context.Context) ([][]byte, error) {
+	fmt.Println("redicrypt: getting all known certs")
+
+	certs := [][]byte{}
+
+	for _, n := range rc.certnames {
+		cert, err := rc.Get(ctx, redisKeyForName(n))
+		if err != nil {
+			return nil, errors.Wrapf("unable to get cert for '%s'", n)
+		}
+		certs = append(certs, cert)
+	}
+
+	return certs, nil
 }
 
 func redisKeyForName(name string) string {
