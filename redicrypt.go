@@ -131,7 +131,7 @@ func (rc *RediCrypt) GetAll(ctx context.Context) ([][]byte, error) {
 	for _, n := range rc.certnames {
 		cert, err := rc.Get(ctx, redisKeyForName(n))
 		if err != nil {
-			return nil, errors.Wrapf("unable to get cert for '%s'", n)
+			return nil, errors.Wrapf(err, "unable to get cert for '%s'", n)
 		}
 		certs = append(certs, cert)
 	}
